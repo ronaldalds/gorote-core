@@ -29,14 +29,14 @@ type AppConfig struct {
 	App        *fiber.App
 	RedisStore *redis.Client
 	GormStore  *gorm.DB
-	Jwt        *AppJwt
+	Jwt        AppJwt
 	Super      *AppSuper
 }
 
 type Middleware struct {
 	App        *fiber.App
 	RedisStore *redis.Client
-	Envs       *AppJwt
+	Envs       AppJwt
 }
 
 type Router struct {
@@ -47,7 +47,7 @@ type Router struct {
 
 type Controller struct {
 	Service *Service
-	Envs    *AppJwt
+	Envs    AppJwt
 }
 
 type Service struct {
