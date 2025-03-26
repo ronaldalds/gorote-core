@@ -39,7 +39,7 @@ func (r *Router) User(router fiber.Router) {
 	router.Put(
 		"/:id",
 		ValidationMiddleware(&UserParam{}, "params"),
-		ValidationMiddleware(&User{}, "json"),
+		ValidationMiddleware(&UserSchema{}, "json"),
 		r.Middleware.JWTProtected(Permissions.UpdateUser),
 		r.Controller.UpdateUserHandler,
 	)
