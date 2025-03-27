@@ -35,7 +35,7 @@ type AppConfig struct {
 
 type Middleware struct {
 	RedisStore *redis.Client
-	JwtScret       string
+	JwtSecret       string
 }
 
 type Router struct {
