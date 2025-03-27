@@ -1,48 +1,20 @@
 package core
 
 import (
-	"context"
 	"fmt"
 	"log"
 	"slices"
-	"time"
 
 	"github.com/go-playground/validator/v10"
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
-
-func (m *Middleware) GetKey(key string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	val, err := m.RedisStore.Get(ctx, key).Result()
-	if err == redis.Nil {
-		return "", fmt.Errorf("key does not exist")
-	} else if err != nil {
-		return "", fmt.Errorf("failed to get key: %v", err)
-	}
-	return val, nil
-}
 
 func (m *Middleware) JWTProtected(permissions ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		token, err := GetJwtHeaderPayload(ctx.Get("Authorization"), m.JwtSecret)
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
-		}
-
-		// Check Redis for active session
-		session, err := m.GetKey(fmt.Sprintf("%d", token.Claims.Sub))
-		if err != nil {
-			log.Println("Redis error:", err) // Log the Redis error
-			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
-		}
-
-		if session != token.Token {
-			log.Println("Token does not match active session") // Log the error
-			return fiber.NewError(fiber.StatusUnauthorized, "token does not match active session")
 		}
 
 		// Check permissions

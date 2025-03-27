@@ -1,9 +1,8 @@
-package example
+package teletubbies
 
 import (
 	"log"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/ronaldalds/gorote-core/core"
 	"gorm.io/gorm"
 )
@@ -15,8 +14,7 @@ type Router struct {
 }
 
 type Middleware struct {
-	RedisStore *redis.Client
-	JwtSecret  string
+	JwtSecret string
 }
 
 type Controller struct {
@@ -26,11 +24,10 @@ type Controller struct {
 
 type Service struct {
 	GormStore  *gorm.DB
-	RedisStore *redis.Client
 }
 
 func New(config *core.AppConfig) *Router {
-	if err := PosReady(config); err != nil {
+	if err := PreReady(config); err != nil {
 		log.Println(err.Error())
 	}
 	return &Router{
@@ -42,8 +39,7 @@ func New(config *core.AppConfig) *Router {
 
 func NewMiddleware(config *core.AppConfig) *Middleware {
 	return &Middleware{
-		RedisStore: config.RedisStore,
-		JwtSecret:  config.Jwt.JwtSecret,
+		JwtSecret: config.Jwt.JwtSecret,
 	}
 }
 
@@ -58,7 +54,6 @@ func NewService(config *core.AppConfig) *Service {
 		log.Println(err.Error())
 	}
 	return &Service{
-		GormStore:  config.GormStore,
-		RedisStore: config.RedisStore,
+		GormStore: config.GormStore,
 	}
 }

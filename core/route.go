@@ -3,16 +3,18 @@ package core
 import "github.com/gofiber/fiber/v2"
 
 func (r *Router) RegisterRouter(router fiber.Router) {
-	router.Get("/health", r.Controller.HealthHandler)
-	// Authentication
-	authGroup := router.Group("/auth", Limited(10))
-	r.Auth(authGroup)
+	r.Health(router.Group("/health"))
+	r.Auth(router.Group("/auth", Limited(10)))
+	r.User(router.Group("/users"))
+	r.Role(router.Group("/roles"))
+	r.Permission(router.Group("/permissions"))
+}
 
-	// Users
-	usersGroup := router.Group("/users")
-	r.User(usersGroup)
-	r.Role(usersGroup)
-	r.Permission(usersGroup)
+func (r *Router) Health(router fiber.Router) {
+	router.Get(
+		"/",
+		r.Controller.HealthHandler,
+	)
 }
 
 func (r *Router) Auth(router fiber.Router) {
@@ -47,13 +49,13 @@ func (r *Router) User(router fiber.Router) {
 
 func (r *Router) Role(router fiber.Router) {
 	router.Get(
-		"/roles",
+		"/",
 		ValidationMiddleware(&Paginate{}, "query"),
 		r.Middleware.JWTProtected(),
 		r.Controller.ListRoleHandler,
 	)
 	router.Post(
-		"/roles",
+		"/",
 		ValidationMiddleware(&CreateRole{}, "json"),
 		r.Middleware.JWTProtected(Permissions.CreateRole),
 		r.Controller.CreateRoleHandler,
@@ -62,7 +64,7 @@ func (r *Router) Role(router fiber.Router) {
 
 func (r *Router) Permission(router fiber.Router) {
 	router.Get(
-		"/permissions",
+		"/",
 		ValidationMiddleware(&Paginate{}, "query"),
 		r.Middleware.JWTProtected(Permissions.EditePermissionsUser),
 		r.Controller.ListPermissiontHandler,

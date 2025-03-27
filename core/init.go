@@ -1,10 +1,9 @@
 package core
 
 import (
-	"fmt"
+	"log"
 	"time"
 
-	"github.com/go-redis/redis/v8"
 	"github.com/gofiber/fiber/v2"
 	"gorm.io/gorm"
 )
@@ -26,22 +25,19 @@ type AppSuper struct {
 }
 
 type AppConfig struct {
-	App        *fiber.App
-	RedisStore *redis.Client
-	GormStore  *gorm.DB
-	Jwt        AppJwt
-	Super      *AppSuper
+	App       *fiber.App
+	GormStore *gorm.DB
+	Jwt       AppJwt
+	Super     *AppSuper
 }
 
 type Middleware struct {
-	RedisStore *redis.Client
-	JwtSecret       string
+	JwtSecret string
 }
 
 type Router struct {
-	Middleware  *Middleware
-	Controller  *Controller
-	Permissions any
+	Middleware *Middleware
+	Controller *Controller
 }
 
 type Controller struct {
@@ -50,21 +46,12 @@ type Controller struct {
 }
 
 type Service struct {
-	GormStore  *gorm.DB
-	RedisStore *redis.Client
+	GormStore *gorm.DB
 }
 
 func New(config *AppConfig) *Router {
-	// Executar as Migrations
-	config.GormStore.AutoMigrate(&User{}, &Role{}, &Permission{})
-	// Executar as Seeds
-	if config.Super != nil {
-		if err := config.SeedUserAdmin(); err != nil {
-			fmt.Println(err.Error())
-		}
-	}
-	if err := config.SeedPermissions(&Permissions); err != nil {
-		fmt.Println(err.Error())
+	if err := PreReady(config); err != nil {
+		log.Println(err.Error())
 	}
 	return &Router{
 		Middleware: NewMiddleware(config),
@@ -74,8 +61,7 @@ func New(config *AppConfig) *Router {
 
 func NewMiddleware(config *AppConfig) *Middleware {
 	return &Middleware{
-		RedisStore: config.RedisStore,
-		JwtSecret:       config.Jwt.JwtSecret,
+		JwtSecret: config.Jwt.JwtSecret,
 	}
 }
 
@@ -86,8 +72,11 @@ func NewController(config *AppConfig) *Controller {
 }
 
 func NewService(config *AppConfig) *Service {
+	if err := PosReady(config); err != nil {
+		log.Println(err.Error())
+	}
+
 	return &Service{
-		GormStore:  config.GormStore,
-		RedisStore: config.RedisStore,
+		GormStore: config.GormStore,
 	}
 }

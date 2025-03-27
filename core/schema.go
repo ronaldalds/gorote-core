@@ -1,8 +1,7 @@
 package core
 
 type HealthHandler struct {
-	Sql   map[string]string `json:"sql"`
-	Redis map[string]string `json:"redis"`
+	Sql map[string]string `json:"sql"`
 }
 
 type Paginate struct {

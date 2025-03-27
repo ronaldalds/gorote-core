@@ -1,11 +1,8 @@
 package core
 
 import (
-	"context"
 	"fmt"
-	"time"
 
-	"github.com/go-redis/redis/v8"
 	"gorm.io/gorm"
 )
 
@@ -25,49 +22,6 @@ func (s *Service) Login(req *Login) (*User, error) {
 		return nil, fmt.Errorf("failed to login: user is inactive")
 	}
 	return &user, nil
-}
-
-func (s *Service) GetKey(key string) (string, error) {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	val, err := s.RedisStore.Get(ctx, key).Result()
-	if err == redis.Nil {
-		return "", fmt.Errorf("key does not exist")
-	} else if err != nil {
-		return "", fmt.Errorf("failed to get key: %v", err)
-	}
-	return val, nil
-}
-
-func (s *Service) SetKeyHash(key string, value map[string]any, ttl time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := s.RedisStore.HSet(ctx, key, value).Err(); err != nil {
-		return fmt.Errorf("failed to set key: %v", err)
-	}
-
-	if err := s.RedisStore.Expire(ctx, key, ttl).Err(); err != nil {
-		return fmt.Errorf("failed to set expiration for key: %v", err)
-	}
-
-	return nil
-}
-
-func (s *Service) SetToken(id uint, access string, ttl time.Duration) error {
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-
-	if err := s.RedisStore.Set(
-		ctx,
-		fmt.Sprintf("%d", id),
-		access,
-		ttl,
-	).Err(); err != nil {
-		return fmt.Errorf("failed to set key: %v", err)
-	}
-	return nil
 }
 
 func (s *Service) ListPermission(permissions *[]Permission) error {
