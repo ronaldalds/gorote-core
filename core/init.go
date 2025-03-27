@@ -55,6 +55,8 @@ type Service struct {
 }
 
 func New(config *AppConfig) *Router {
+	// Executar as Migrations
+	config.GormStore.AutoMigrate(&User{}, &Role{}, &Permission{})
 	// Executar as Seeds
 	if config.Super != nil {
 		if err := config.SeedUserAdmin(); err != nil {
@@ -84,11 +86,8 @@ func NewController(config *AppConfig) *Controller {
 }
 
 func NewService(config *AppConfig) *Service {
-	service := &Service{
+	return &Service{
 		GormStore:  config.GormStore,
 		RedisStore: config.RedisStore,
 	}
-	// Executar as Migrations
-	service.GormStore.AutoMigrate(&User{}, &Role{}, &Permission{})
-	return service
 }
