@@ -34,9 +34,8 @@ type AppConfig struct {
 }
 
 type Middleware struct {
-	App        *fiber.App
 	RedisStore *redis.Client
-	Envs       AppJwt
+	JwtScret       string
 }
 
 type Router struct {
@@ -73,9 +72,8 @@ func New(config *AppConfig) *Router {
 
 func NewMiddleware(config *AppConfig) *Middleware {
 	return &Middleware{
-		App:        config.App,
 		RedisStore: config.RedisStore,
-		Envs:       config.Jwt,
+		JwtSecret:       config.Jwt.JwtSecret,
 	}
 }
 

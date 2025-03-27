@@ -28,7 +28,7 @@ func (m *Middleware) GetKey(key string) (string, error) {
 
 func (m *Middleware) JWTProtected(permissions ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		token, err := GetJwtHeaderPayload(ctx.Get("Authorization"), m.Envs.JwtSecret)
+		token, err := GetJwtHeaderPayload(ctx.Get("Authorization"), m.JwtSecret)
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
