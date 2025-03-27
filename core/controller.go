@@ -8,18 +8,13 @@ import (
 )
 
 func (con *Controller) HealthHandler(ctx *fiber.Ctx) error {
-	redis, err := con.Service.HealthRedis()
-	if err != nil {
-		log.Println(err.Error())
-	}
 	sql, err := con.Service.HealthGorm()
 	if err != nil {
 		log.Println(err.Error())
 	}
 
 	health := &HealthHandler{
-		Sql:   sql,
-		Redis: redis,
+		Sql: sql,
 	}
 	return ctx.Status(fiber.StatusOK).JSON(health)
 }
@@ -60,10 +55,7 @@ func (con *Controller) LoginHandler(ctx *fiber.Ctx) error {
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
-	// save token in redis
-	if err := con.Service.SetToken(user.ID, accessToken, con.Envs.JwtExpireAcess); err != nil {
-		return fiber.NewError(fiber.StatusBadRequest, err.Error())
-	}
+
 	// send response
 	res := &Token{
 		AccessToken:  accessToken,

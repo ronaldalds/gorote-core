@@ -80,30 +80,3 @@ func (s *Service) HealthGorm() (map[string]string, error) {
 
 	return stats, nil
 }
-
-func (s *Service) HealthRedis() (map[string]string, error) {
-	stats := make(map[string]string)
-	// Cria um contexto com timeout para o health check
-	ctx, cancel := context.WithTimeout(context.Background(), 2*time.Second)
-	defer cancel()
-
-	if client := s.RedisStore; client == nil {
-		return nil, fmt.Errorf("failed to connect to Redis")
-	}
-
-	start := time.Now()
-	// Testa a conectividade com o Redis usando PING
-	_, err := s.RedisStore.Ping(ctx).Result()
-	duration := time.Since(start)
-
-	if err != nil {
-		stats["status"] = "down"
-		stats["error"] = fmt.Sprintf("failed to connect to Redis: %v", err)
-	} else {
-		stats["status"] = "up"
-		stats["response_time"] = duration.String()
-		stats["message"] = "Redis is healthy"
-	}
-
-	return stats, nil
-}
