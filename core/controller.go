@@ -38,7 +38,7 @@ func (con *Controller) LoginHandler(ctx *fiber.Ctx) error {
 		IsSuperUser: user.IsSuperUser,
 		TimeZone:    con.Jwt.TimeZone,
 		JwtSecret:   con.Jwt.JwtSecret,
-		Ttl:         con.Jwt.JwtExpireAcess,
+		Ttl:         con.Jwt.JwtExpireAccess,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
