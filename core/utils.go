@@ -90,6 +90,21 @@ func SendHttpRequest(params HttpRequestParams) (*http.Response, error) {
 	return res, nil
 }
 
+func ValidateAppConfig(config *AppConfig) error {
+	if config.App == nil || config.GormStore == nil {
+		return fmt.Errorf("App or GormStore is nil")
+	}
+	if config.Jwt.JwtSecret == "" ||
+		config.Jwt.TimeZone == "" ||
+		config.Jwt.AppName == "" ||
+		config.Jwt.JwtExpireAccess == 0 ||
+		config.Jwt.JwtExpireRefresh == 0 {
+		return fmt.Errorf("config jwt is invalid")
+	}
+
+	return nil
+}
+
 func ExtractNameRolesByUser(user User) []uint {
 	var data []uint
 	for _, role := range user.Roles {

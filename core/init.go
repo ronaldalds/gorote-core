@@ -12,7 +12,7 @@ type AppJwt struct {
 	AppName          string
 	TimeZone         string
 	JwtSecret        string
-	JwtExpireAcess   time.Duration
+	JwtExpireAccess  time.Duration
 	JwtExpireRefresh time.Duration
 }
 
@@ -50,8 +50,11 @@ type Service struct {
 }
 
 func New(config *AppConfig) *Router {
+	if err := ValidateAppConfig(config); err != nil {
+		log.Fatal(err.Error())
+	}
 	if err := PreReady(config); err != nil {
-		log.Println(err.Error())
+		log.Fatal(err.Error())
 	}
 	return &Router{
 		Middleware: NewMiddleware(config.Jwt.JwtSecret),
@@ -74,7 +77,7 @@ func NewController(config *AppConfig) *Controller {
 
 func NewService(config *AppConfig) *Service {
 	if err := PosReady(config); err != nil {
-		log.Println(err.Error())
+		log.Fatal(err.Error())
 	}
 
 	return &Service{
