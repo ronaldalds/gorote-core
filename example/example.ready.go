@@ -1,28 +1,17 @@
 package example
 
-import (
-	"fmt"
-
-	"github.com/ronaldalds/gorote-core/core"
-)
-
-func PreReady(config *core.AppConfig) error {
+func PreReady(config *AppConfig) error {
 	// Executar as Migrations
-	if err := config.GormStore.AutoMigrate(); err != nil {
-		return err
-	}
+	// if err := config.GormStore.AutoMigrate(); err != nil {
+	// 	return err
+	// }
 	// Executar as Seeds
-	if config.Super != nil {
-		if err := config.SeedUserAdmin(); err != nil {
-			fmt.Println(err.Error())
-		}
-	}
-	if err := config.SeedPermissions(&Permissions); err != nil {
-		fmt.Println(err.Error())
-	}
+	// if err := config.SeedPermissions(&Permissions); err != nil {
+	// 	return err
+	// }
 	return nil
 }
 
-func PosReady(config *core.AppConfig) error {
+func PosReady(config *AppConfig) error {
 	return nil
 }

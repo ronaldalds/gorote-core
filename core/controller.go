@@ -33,24 +33,24 @@ func (con *Controller) LoginHandler(ctx *fiber.Ctx) error {
 	// generate tokens
 	accessToken, err := GenerateToken(&GenToken{
 		Id:          user.ID,
-		AppName:     con.Envs.AppName,
+		AppName:     con.Jwt.AppName,
 		Permissions: permissions,
 		IsSuperUser: user.IsSuperUser,
-		TimeZone:    con.Envs.TimeZone,
-		JwtSecret:   con.Envs.JwtSecret,
-		Ttl:         con.Envs.JwtExpireAcess,
+		TimeZone:    con.Jwt.TimeZone,
+		JwtSecret:   con.Jwt.JwtSecret,
+		Ttl:         con.Jwt.JwtExpireAcess,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
 	refreshToken, err := GenerateToken(&GenToken{
 		Id:          user.ID,
-		AppName:     con.Envs.AppName,
+		AppName:     con.Jwt.AppName,
 		Permissions: permissions,
 		IsSuperUser: user.IsSuperUser,
-		TimeZone:    con.Envs.TimeZone,
-		JwtSecret:   con.Envs.JwtSecret,
-		Ttl:         con.Envs.JwtExpireRefresh,
+		TimeZone:    con.Jwt.TimeZone,
+		JwtSecret:   con.Jwt.JwtSecret,
+		Ttl:         con.Jwt.JwtExpireRefresh,
 	})
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
@@ -220,7 +220,7 @@ func (con *Controller) CreateUserHandler(ctx *fiber.Ctx) error {
 	}
 	req.Password = hashedPassword
 
-	creator, err := GetJwtHeaderPayload(ctx.Get("Authorization"), con.Envs.JwtSecret)
+	creator, err := GetJwtHeaderPayload(ctx.Get("Authorization"), con.Jwt.JwtSecret)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}
@@ -249,7 +249,7 @@ func (con *Controller) UpdateUserHandler(ctx *fiber.Ctx) error {
 
 	fmt.Println(req.ID)
 
-	editor, err := GetJwtHeaderPayload(ctx.Get("Authorization"), con.Envs.JwtSecret)
+	editor, err := GetJwtHeaderPayload(ctx.Get("Authorization"), con.Jwt.JwtSecret)
 	if err != nil {
 		return fiber.NewError(fiber.StatusBadRequest, err.Error())
 	}

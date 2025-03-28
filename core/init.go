@@ -42,7 +42,7 @@ type Router struct {
 
 type Controller struct {
 	Service *Service
-	Envs    AppJwt
+	Jwt     AppJwt
 }
 
 type Service struct {
@@ -54,20 +54,21 @@ func New(config *AppConfig) *Router {
 		log.Println(err.Error())
 	}
 	return &Router{
-		Middleware: NewMiddleware(config),
+		Middleware: NewMiddleware(config.Jwt.JwtSecret),
 		Controller: NewController(config),
 	}
 }
 
-func NewMiddleware(config *AppConfig) *Middleware {
+func NewMiddleware(jwtSecret string) *Middleware {
 	return &Middleware{
-		JwtSecret: config.Jwt.JwtSecret,
+		JwtSecret: jwtSecret,
 	}
 }
 
 func NewController(config *AppConfig) *Controller {
 	return &Controller{
 		Service: NewService(config),
+		Jwt:     config.Jwt,
 	}
 }
 

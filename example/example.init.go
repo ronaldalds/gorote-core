@@ -1,4 +1,4 @@
-package teletubbies
+package example
 
 import (
 	"log"
@@ -6,6 +6,10 @@ import (
 	"github.com/ronaldalds/gorote-core/core"
 	"gorm.io/gorm"
 )
+
+type AppConfig struct {
+	core.AppConfig
+}
 
 type Router struct {
 	MiddlewareCore *core.Middleware
@@ -19,37 +23,38 @@ type Middleware struct {
 
 type Controller struct {
 	Service *Service
-	Envs    core.AppJwt
+	Jwt     core.AppJwt
 }
 
 type Service struct {
-	GormStore  *gorm.DB
+	GormStore *gorm.DB
 }
 
-func New(config *core.AppConfig) *Router {
+func New(config *AppConfig) *Router {
 	if err := PreReady(config); err != nil {
 		log.Println(err.Error())
 	}
 	return &Router{
-		MiddlewareCore: core.NewMiddleware(config),
-		MiddlewareApp:  NewMiddleware(config),
+		MiddlewareCore: core.NewMiddleware(config.Jwt.JwtSecret),
+		MiddlewareApp:  NewMiddleware(config.Jwt.JwtSecret),
 		Controller:     NewController(config),
 	}
 }
 
-func NewMiddleware(config *core.AppConfig) *Middleware {
+func NewMiddleware(jwtSecret string) *Middleware {
 	return &Middleware{
-		JwtSecret: config.Jwt.JwtSecret,
+		JwtSecret: jwtSecret,
 	}
 }
 
-func NewController(config *core.AppConfig) *Controller {
+func NewController(config *AppConfig) *Controller {
 	return &Controller{
 		Service: NewService(config),
+		Jwt:     config.Jwt,
 	}
 }
 
-func NewService(config *core.AppConfig) *Service {
+func NewService(config *AppConfig) *Service {
 	if err := PosReady(config); err != nil {
 		log.Println(err.Error())
 	}
