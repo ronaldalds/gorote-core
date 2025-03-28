@@ -1,10 +1,11 @@
 package example
 
 import (
+	"fmt"
 	"log"
+	"time"
 
 	"github.com/ronaldalds/gorote-core/core"
-	"gorm.io/gorm"
 )
 
 type AppConfig struct {
@@ -27,7 +28,8 @@ type Controller struct {
 }
 
 type Service struct {
-	GormStore *gorm.DB
+	AppConfig
+	TimeUCT time.Location
 }
 
 func New(config *AppConfig) *Router {
@@ -58,10 +60,16 @@ func NewController(config *AppConfig) *Controller {
 }
 
 func NewService(config *AppConfig) *Service {
-	if err := PosReady(config); err != nil {
+	location, err := time.LoadLocation(config.Jwt.TimeZone)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("invalid timezone: %s", err.Error()))
+	}
+	service := &Service{
+		AppConfig: *config,
+		TimeUCT:   *location,
+	}
+	if err := PosReady(service); err != nil {
 		log.Fatal(err.Error())
 	}
-	return &Service{
-		GormStore: config.GormStore,
-	}
+	return service
 }
