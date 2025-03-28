@@ -266,3 +266,13 @@ func GetJwtHeaderPayload(auth, secret string) (*PayloadJwt, error) {
 
 	return jwt, nil
 }
+
+func RemoveInvisibleChars(input string) string {
+	var result []rune
+	for _, r := range input {
+		if unicode.IsPrint(r) && r != '\u200b' {
+			result = append(result, r)
+		}
+	}
+	return string(result)
+}
