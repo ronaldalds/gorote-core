@@ -17,6 +17,6 @@ func PreReady(config *AppConfig) error {
 	return nil
 }
 
-func PosReady(config *AppConfig) error {
+func PosReady(config *Service) error {
 	return nil
 }

@@ -9,53 +9,40 @@ import (
 )
 
 type AppConfig struct {
-	core.AppConfig
+	*core.AppConfig
 }
 
 type Router struct {
-	MiddlewareCore *core.Middleware
-	MiddlewareApp  *Middleware
-	Controller     *Controller
-}
-
-type Middleware struct {
-	JwtSecret string
+	*AppConfig
+	Controller *Controller
 }
 
 type Controller struct {
+	*AppConfig
 	Service *Service
-	Jwt     core.AppJwt
 }
 
 type Service struct {
-	AppConfig
-	TimeUCT time.Location
+	*AppConfig
+	TimeUCT *time.Location
 }
 
 func New(config *AppConfig) *Router {
-	if err := core.ValidateAppConfig(&config.AppConfig); err != nil {
+	if err := core.ValidateAppConfig(config.AppConfig); err != nil {
 		log.Fatal(err.Error())
 	}
 	if err := PreReady(config); err != nil {
 		log.Fatal(err.Error())
 	}
 	return &Router{
-		MiddlewareCore: core.NewMiddleware(config.Jwt.JwtSecret),
-		MiddlewareApp:  NewMiddleware(config.Jwt.JwtSecret),
-		Controller:     NewController(config),
-	}
-}
-
-func NewMiddleware(jwtSecret string) *Middleware {
-	return &Middleware{
-		JwtSecret: jwtSecret,
+		Controller: NewController(config),
 	}
 }
 
 func NewController(config *AppConfig) *Controller {
 	return &Controller{
-		Service: NewService(config),
-		Jwt:     config.Jwt,
+		AppConfig: config,
+		Service:   NewService(config),
 	}
 }
 
@@ -65,8 +52,8 @@ func NewService(config *AppConfig) *Service {
 		log.Fatal(fmt.Sprintf("invalid timezone: %s", err.Error()))
 	}
 	service := &Service{
-		AppConfig: *config,
-		TimeUCT:   *location,
+		AppConfig: config,
+		TimeUCT:   location,
 	}
 	if err := PosReady(service); err != nil {
 		log.Fatal(err.Error())

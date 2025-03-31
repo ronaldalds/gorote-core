@@ -10,9 +10,9 @@ import (
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
 
-func (m *Middleware) JWTProtected(permissions ...string) fiber.Handler {
+func JWTProtected(jwtSecret string, permissions ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		token, err := GetJwtHeaderPayload(ctx.Get("Authorization"), m.JwtSecret)
+		token, err := GetJwtHeaderPayload(ctx.Get("Authorization"), jwtSecret)
 		if err != nil {
 			return fiber.NewError(fiber.StatusUnauthorized, err.Error())
 		}
