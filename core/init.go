@@ -1,6 +1,7 @@
 package core
 
 import (
+	"fmt"
 	"log"
 	"time"
 
@@ -31,22 +32,19 @@ type AppConfig struct {
 	Super     *AppSuper
 }
 
-type Middleware struct {
-	JwtSecret string
-}
-
 type Router struct {
-	Middleware *Middleware
+	*AppConfig
 	Controller *Controller
 }
 
 type Controller struct {
+	*AppConfig
 	Service *Service
-	Jwt     AppJwt
 }
 
 type Service struct {
-	GormStore *gorm.DB
+	*AppConfig
+	TimeUCT *time.Location
 }
 
 func New(config *AppConfig) *Router {
@@ -57,30 +55,29 @@ func New(config *AppConfig) *Router {
 		log.Fatal(err.Error())
 	}
 	return &Router{
-		Middleware: NewMiddleware(config.Jwt.JwtSecret),
+		AppConfig:  config,
 		Controller: NewController(config),
-	}
-}
-
-func NewMiddleware(jwtSecret string) *Middleware {
-	return &Middleware{
-		JwtSecret: jwtSecret,
 	}
 }
 
 func NewController(config *AppConfig) *Controller {
 	return &Controller{
-		Service: NewService(config),
-		Jwt:     config.Jwt,
+		AppConfig: config,
+		Service:   NewService(config),
 	}
 }
 
 func NewService(config *AppConfig) *Service {
-	if err := PosReady(config); err != nil {
+	location, err := time.LoadLocation(config.Jwt.TimeZone)
+	if err != nil {
+		log.Fatal(fmt.Sprintf("invalid timezone: %s", err.Error()))
+	}
+	service := &Service{
+		AppConfig: config,
+		TimeUCT:   location,
+	}
+	if err := PosReady(service); err != nil {
 		log.Fatal(err.Error())
 	}
-
-	return &Service{
-		GormStore: config.GormStore,
-	}
+	return service
 }

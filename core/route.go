@@ -29,20 +29,20 @@ func (r *Router) User(router fiber.Router) {
 	router.Get(
 		"/",
 		ValidationMiddleware(&Paginate{}, "query"),
-		r.Middleware.JWTProtected(),
+		JWTProtected(r.Jwt.JwtSecret),
 		r.Controller.ListUserHandler,
 	)
 	router.Post(
 		"/",
 		ValidationMiddleware(&CreateUser{}, "json"),
-		r.Middleware.JWTProtected(Permissions.CreateUser),
+		JWTProtected(r.Jwt.JwtSecret, Permissions.CreateUser),
 		r.Controller.CreateUserHandler,
 	)
 	router.Put(
 		"/:id",
 		ValidationMiddleware(&UserParam{}, "params"),
 		ValidationMiddleware(&UserSchema{}, "json"),
-		r.Middleware.JWTProtected(Permissions.UpdateUser),
+		JWTProtected(r.Jwt.JwtSecret, Permissions.UpdateUser),
 		r.Controller.UpdateUserHandler,
 	)
 }
@@ -51,13 +51,13 @@ func (r *Router) Role(router fiber.Router) {
 	router.Get(
 		"/",
 		ValidationMiddleware(&Paginate{}, "query"),
-		r.Middleware.JWTProtected(),
+		JWTProtected(r.Jwt.JwtSecret),
 		r.Controller.ListRoleHandler,
 	)
 	router.Post(
 		"/",
 		ValidationMiddleware(&CreateRole{}, "json"),
-		r.Middleware.JWTProtected(Permissions.CreateRole),
+		JWTProtected(r.Jwt.JwtSecret, Permissions.CreateRole),
 		r.Controller.CreateRoleHandler,
 	)
 }
@@ -66,7 +66,7 @@ func (r *Router) Permission(router fiber.Router) {
 	router.Get(
 		"/",
 		ValidationMiddleware(&Paginate{}, "query"),
-		r.Middleware.JWTProtected(Permissions.EditePermissionsUser),
+		JWTProtected(r.Jwt.JwtSecret, Permissions.EditePermissionsUser),
 		r.Controller.ListPermissiontHandler,
 	)
 }
