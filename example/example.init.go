@@ -35,6 +35,7 @@ func New(config *AppConfig) *Router {
 		log.Fatal(err.Error())
 	}
 	return &Router{
+		AppConfig: 	config,
 		Controller: NewController(config),
 	}
 }
