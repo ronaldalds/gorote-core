@@ -13,7 +13,8 @@ func (s *AppConfig) SeedUserAdmin() error {
 	var user User
 	err := s.GormStore.Where("username = ?", s.Super.SuperUser).First(&user).Error
 	if err == nil {
-		return fmt.Errorf("admin already exists")
+		log.Println("admin already exists")
+		return nil
 	}
 	if !errors.Is(err, gorm.ErrRecordNotFound) {
 		return fmt.Errorf("failed to check admin existence: %s", err.Error())
