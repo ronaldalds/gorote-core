@@ -60,7 +60,7 @@ func ValidationMiddleware(requestStruct any, inputType string) fiber.Handler {
 
 		// Valide os dados usando o validator
 		if err := validateStruct(requestStruct); err != nil {
-			return ctx.Status(fiber.StatusBadRequest).JSON(err)
+			return fiber.NewError(fiber.StatusBadRequest, err.Error())
 		}
 
 		// Armazene os dados validados no contexto
