@@ -6,9 +6,20 @@ import (
 	"slices"
 
 	"github.com/go-playground/validator/v10"
+	"github.com/gofiber/contrib/websocket"
 	"github.com/gofiber/fiber/v2"
 	"github.com/gofiber/fiber/v2/middleware/limiter"
 )
+
+func IsWsMiddleware() fiber.Handler {
+	return func(ctx *fiber.Ctx) error {
+		if !websocket.IsWebSocketUpgrade(ctx) {
+			return fiber.NewError(fiber.StatusUpgradeRequired, "upgrade required")
+		}
+
+		return ctx.Next()
+	}
+}
 
 func JWTProtected(jwtSecret string, permissions ...string) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
@@ -60,7 +71,7 @@ func ValidationMiddleware(requestStruct any, inputType string) fiber.Handler {
 
 		// Valide os dados usando o validator
 		if err := validateStruct(requestStruct); err != nil {
-			return fiber.NewError(fiber.StatusBadRequest, err.Error())
+			return ctx.Status(fiber.StatusBadRequest).JSON(err)
 		}
 
 		// Armazene os dados validados no contexto

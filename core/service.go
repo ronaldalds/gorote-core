@@ -99,8 +99,8 @@ func (s *Service) GetRoleByIds(ids []uint) ([]Role, error) {
 func (s *Service) GetUserByID(id uint) (*User, error) {
 	var user User
 	result := s.GormStore.
-		Preload("Roles.Permissions").
 		Where("id = ?", id).
+		Preload("Roles.Permissions").
 		First(&user)
 	if result.Error != nil {
 		if result.Error == gorm.ErrRecordNotFound {
