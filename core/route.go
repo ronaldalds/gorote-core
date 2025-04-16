@@ -20,7 +20,7 @@ func (r *Router) Health(router fiber.Router) {
 func (r *Router) Auth(router fiber.Router) {
 	router.Post(
 		"/login",
-		ValidationMiddleware(&Login{}, "json"),
+		ValidationMiddleware(&Login{}),
 		r.Controller.LoginHandler,
 	)
 }
@@ -28,21 +28,21 @@ func (r *Router) Auth(router fiber.Router) {
 func (r *Router) User(router fiber.Router) {
 	router.Get(
 		"/",
-		ValidationMiddleware(&Paginate{}, "query"),
+		ValidationMiddleware(&Paginate{}),
 		JWTProtected(r.Jwt.JwtSecret),
 		r.Controller.ListUserHandler,
 	)
 	router.Post(
 		"/",
-		ValidationMiddleware(&CreateUser{}, "json"),
-		JWTProtected(r.Jwt.JwtSecret, Permissions.CreateUser),
+		ValidationMiddleware(&CreateUser{}),
+		JWTProtected(r.Jwt.JwtSecret, PermissionCreateUser),
 		r.Controller.CreateUserHandler,
 	)
 	router.Put(
 		"/:id",
-		ValidationMiddleware(&UserParam{}, "params"),
-		ValidationMiddleware(&UserSchema{}, "json"),
-		JWTProtected(r.Jwt.JwtSecret, Permissions.UpdateUser),
+		ValidationMiddleware(&UserParam{}),
+		ValidationMiddleware(&UserSchema{}),
+		JWTProtected(r.Jwt.JwtSecret, PermissionUpdateUser),
 		r.Controller.UpdateUserHandler,
 	)
 }
@@ -50,14 +50,14 @@ func (r *Router) User(router fiber.Router) {
 func (r *Router) Role(router fiber.Router) {
 	router.Get(
 		"/",
-		ValidationMiddleware(&Paginate{}, "query"),
+		ValidationMiddleware(&Paginate{}),
 		JWTProtected(r.Jwt.JwtSecret),
 		r.Controller.ListRoleHandler,
 	)
 	router.Post(
 		"/",
-		ValidationMiddleware(&CreateRole{}, "json"),
-		JWTProtected(r.Jwt.JwtSecret, Permissions.CreateRole),
+		ValidationMiddleware(&CreateRole{}),
+		JWTProtected(r.Jwt.JwtSecret, PermissionCreateRole),
 		r.Controller.CreateRoleHandler,
 	)
 }
@@ -65,8 +65,8 @@ func (r *Router) Role(router fiber.Router) {
 func (r *Router) Permission(router fiber.Router) {
 	router.Get(
 		"/",
-		ValidationMiddleware(&Paginate{}, "query"),
-		JWTProtected(r.Jwt.JwtSecret, Permissions.EditePermissionsUser),
+		ValidationMiddleware(&Paginate{}),
+		JWTProtected(r.Jwt.JwtSecret, PermissionEditePermissionsUser),
 		r.Controller.ListPermissiontHandler,
 	)
 }

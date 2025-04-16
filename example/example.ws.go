@@ -9,7 +9,7 @@ import (
 )
 
 type WsConn struct {
-	ID uint
+	ID uint `param:"id"`
 }
 
 var (

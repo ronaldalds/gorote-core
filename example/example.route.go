@@ -14,7 +14,7 @@ func (r *Router) Ws(router fiber.Router) {
 	router.Get(
 		"/:id",
 		core.IsWsMiddleware(),
-		core.ValidationMiddleware(&WsConn{}, "params"),
+		core.ValidationMiddleware(&WsConn{}),
 		core.JWTProtected(r.Jwt.JwtSecret),
 		websocket.New(r.Controller.websocketHandler),
 	)

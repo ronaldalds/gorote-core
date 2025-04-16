@@ -1,9 +1,11 @@
 package example
 
-type PermissionCode struct {
-	Create string `value:"create_example"`
-	View   string `value:"view_example"`
-	Update string `value:"update_example"`
-}
+import (
+	"github.com/ronaldalds/gorote-core/core"
+)
 
-var Permissions PermissionCode
+const (
+	PermissionExampleCreate core.PermissionCode = "create_example"
+	PermissionExampleView   core.PermissionCode = "view_example"
+	PermissionExampleUpdate core.PermissionCode = "update_example"
+)

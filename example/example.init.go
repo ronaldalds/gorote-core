@@ -31,11 +31,11 @@ func New(config *AppConfig) *Router {
 	if err := core.ValidateAppConfig(config.AppConfig); err != nil {
 		log.Fatal(err.Error())
 	}
-	if err := PreReady(config); err != nil {
+	if err := config.PreReady(); err != nil {
 		log.Fatal(err.Error())
 	}
 	return &Router{
-		AppConfig: 	config,
+		AppConfig:  config,
 		Controller: NewController(config),
 	}
 }
@@ -56,7 +56,7 @@ func NewService(config *AppConfig) *Service {
 		AppConfig: config,
 		TimeUCT:   location,
 	}
-	if err := PosReady(service); err != nil {
+	if err := service.PosReady(); err != nil {
 		log.Fatal(err.Error())
 	}
 	return service

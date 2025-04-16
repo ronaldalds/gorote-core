@@ -1,22 +1,36 @@
 package core
 
-func PreReady(config *AppConfig) error {
-	// Executar as Migrations
-	if err := config.GormStore.AutoMigrate(&User{}, &Role{}, &Permission{}); err != nil {
+func (config *AppConfig) PreReady() error {
+	// Exe. Migrations
+	if err := config.GormStore.AutoMigrate(
+		&User{},
+		&Role{},
+		&Permission{},
+	); err != nil {
 		return err
 	}
-	// Executar as Seeds
+	// Exe. Seeds
 	if config.Super != nil {
-		if err := config.SeedUserAdmin(); err != nil {
+		if err := config.SaveUserAdmin(); err != nil {
 			return err
 		}
 	}
-	if err := config.SeedPermissions(&Permissions); err != nil {
+
+	if err := config.SavePermissions(
+		PermissionSuperUser,
+		PermissionCreateUser,
+		PermissionViewUser,
+		PermissionUpdateUser,
+		PermissionEditePermissionsUser,
+		PermissionCreateRole,
+		PermissionViewRole,
+		PermissionUpdateRole,
+	); err != nil {
 		return err
 	}
 	return nil
 }
 
-func PosReady(config *Service) error {
+func (s *Service) PosReady() error {
 	return nil
 }

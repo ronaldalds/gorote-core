@@ -9,6 +9,39 @@ import (
 	"gorm.io/gorm"
 )
 
+func (a *AppConfig) SaveUserAdmin() error {
+	hashPassword, err := HashPassword(a.Super.SuperPass)
+	if err != nil {
+		return fmt.Errorf("failed to hash password: %s", err.Error())
+	}
+	if err := a.GormStore.
+		FirstOrCreate(&User{
+			FirstName:   a.Super.SuperName,
+			LastName:    "Admin",
+			Username:    a.Super.SuperUser,
+			Email:       a.Super.SuperEmail,
+			Password:    hashPassword,
+			Active:      true,
+			IsSuperUser: true,
+			Phone1:      a.Super.SuperPhone,
+		}).Error; err != nil {
+		return err
+	}
+	return nil
+}
+
+func (a *AppConfig) SavePermissions(permissions ...PermissionCode) error {
+	for _, permission := range permissions {
+		if err := a.GormStore.
+			FirstOrCreate(&Permission{Code: string(permission)}).
+			Error; err != nil {
+			return err
+		}
+	}
+	return nil
+}
+
+// Deprecated: use SaveUserAdmin
 func (s *AppConfig) SeedUserAdmin() error {
 	var user User
 	err := s.GormStore.Where("username = ?", s.Super.SuperUser).First(&user).Error
@@ -40,13 +73,13 @@ func (s *AppConfig) SeedUserAdmin() error {
 	return nil
 }
 
+// Deprecated: use SavePermissions
 func (s *AppConfig) SeedPermissions(permissions any) error {
 	v := reflect.ValueOf(permissions)
 	if v.Kind() == reflect.Ptr {
-		v = v.Elem() // Dereferencia o ponteiro para obter o valor subjacente
+		v = v.Elem()
 	}
 
-	// Verifica se o valor subjacente é uma struct
 	if v.Kind() != reflect.Struct {
 		return fmt.Errorf("expected a struct, got %v", v.Kind())
 	}

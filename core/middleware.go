@@ -3,6 +3,7 @@ package core
 import (
 	"fmt"
 	"log"
+	"reflect"
 	"slices"
 
 	"github.com/go-playground/validator/v10"
@@ -21,7 +22,7 @@ func IsWsMiddleware() fiber.Handler {
 	}
 }
 
-func JWTProtected(jwtSecret string, permissions ...string) fiber.Handler {
+func JWTProtected(jwtSecret string, permissions ...PermissionCode) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
 		token, err := GetJwtHeaderPayload(ctx.Get("Authorization"), jwtSecret)
 		if err != nil {
@@ -38,7 +39,7 @@ func JWTProtected(jwtSecret string, permissions ...string) fiber.Handler {
 
 		// Check if any required permission exists in user's permissions
 		for _, requiredPermission := range permissions {
-			if slices.Contains(token.Claims.Permissions, requiredPermission) {
+			if slices.Contains(token.Claims.Permissions, string(requiredPermission)) {
 				log.Println("Permission validated, proceeding to next handler")
 				return ctx.Next()
 			}
@@ -50,23 +51,56 @@ func JWTProtected(jwtSecret string, permissions ...string) fiber.Handler {
 	}
 }
 
-func ValidationMiddleware(requestStruct any, inputType string) fiber.Handler {
+func ValidationMiddleware(requestStruct any) fiber.Handler {
 	return func(ctx *fiber.Ctx) error {
-		switch inputType {
-		case "query":
-			if err := ctx.QueryParser(requestStruct); err != nil {
-				return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid query parameters: %s", err.Error()))
+		v := reflect.ValueOf(requestStruct)
+		if v.Kind() == reflect.Ptr {
+			v = v.Elem() // Dereferencia o ponteiro para obter o valor subjacente
+		}
+
+		// Verifica se o valor subjacente é uma struct
+		if v.Kind() != reflect.Struct {
+			return fiber.NewError(fiber.StatusInternalServerError, "validation target must be a struct")
+		}
+
+		t := v.Type()
+		var foundTag bool
+		var parseErr error
+
+		// Verifica todas as tags para determinar o tipo de input
+		for i := 0; i < t.NumField(); i++ {
+			field := t.Field(i)
+
+			// Verifica tags de query
+			if _, ok := field.Tag.Lookup("query"); ok {
+				foundTag = true
+				if parseErr = ctx.QueryParser(requestStruct); parseErr != nil {
+					return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid query parameters: %s", parseErr.Error()))
+				}
+				break
 			}
-		case "json":
-			if err := ctx.BodyParser(requestStruct); err != nil {
-				return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid body: %s", err.Error()))
+
+			// Verifica tags de json
+			if _, ok := field.Tag.Lookup("json"); ok {
+				foundTag = true
+				if parseErr = ctx.BodyParser(requestStruct); parseErr != nil {
+					return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid body: %s", parseErr.Error()))
+				}
+				break
 			}
-		case "params":
-			if err := ctx.ParamsParser(requestStruct); err != nil {
-				return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid URL parameters: %s", err.Error()))
+
+			// Verifica tags de params (URL parameters)
+			if _, ok := field.Tag.Lookup("params"); ok {
+				foundTag = true
+				if parseErr = ctx.ParamsParser(requestStruct); parseErr != nil {
+					return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid URL parameters: %s", parseErr.Error()))
+				}
+				break
 			}
-		default:
-			return fiber.NewError(fiber.StatusBadRequest, fmt.Sprintf("invalid validation type"))
+		}
+
+		if !foundTag {
+			return fiber.NewError(fiber.StatusBadRequest, "no valid tags found in struct (query, json or params)")
 		}
 
 		// Valide os dados usando o validator
